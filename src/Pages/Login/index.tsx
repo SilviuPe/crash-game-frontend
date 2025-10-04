@@ -1,24 +1,38 @@
-import {useState} from "react";
+import React, {useEffect, useState} from "react";
 import './index.css';
+import { FetchLogin } from "./api.ts";
+import {validateToken} from "../../Utils/verifications.ts";
 
 function Login() {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Login with:', { email, password });
+        FetchLogin(username, password);
+        console.log("test")
     };
+
+    useEffect(() => {
+        const checkToken = async () => {
+            const isValid = await validateToken();
+            if (isValid) {
+                window.location.href = "/";
+            }
+        };
+
+        checkToken().then();
+    }, []);
 
     return (
         <div className="login-container">
-            <div className="login-form" onSubmit={handleSubmit}>
+            <form className="login-form" onSubmit={handleSubmit}>
                 <h2>Login</h2>
                 <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    type="text"
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     required
                 />
                 <input
@@ -30,7 +44,7 @@ function Login() {
                 />
                 <button type="submit">Login</button>
                 <a href={'/register'}>Don't have an account? Create one !</a>
-            </div>
+            </form>
         </div>
     );
 }

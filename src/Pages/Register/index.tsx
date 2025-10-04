@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import './index.css';
+import {validateToken} from "../../Utils/verifications.ts";
+import {FetchRegister} from "./api.ts";
 
 function Register(){
     const [name, setName] = useState('');
@@ -8,12 +10,23 @@ function Register(){
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Register with:', { name, email, password });
+        FetchRegister(name, email, password);
     };
+
+    useEffect(() => {
+        const checkToken = async () => {
+            const isValid = await validateToken();
+            if (isValid) {
+                window.location.href = "/";
+            }
+        };
+
+        checkToken().then();
+    }, []);
 
     return (
         <div className="register-container">
-            <div className="register-form" onSubmit={handleSubmit}>
+            <form className="register-form" onSubmit={handleSubmit}>
                 <h2>Register</h2>
                 <input
                     type="text"
@@ -38,7 +51,7 @@ function Register(){
                 />
                 <button type="submit">Register</button>
                 <a href={'/login'}>Already have an account? Login !</a>
-            </div>
+            </form>
         </div>
     );
 };

@@ -1,0 +1,182 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #121212;
+    color: white;
+}
+
+.dashboard {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.dashboard-header {
+    width: 100%;
+    max-width: 1000px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dashboard-header .title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #bb86fc;
+}
+
+.dashboard-header .balance {
+    background: #1e1e1e;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+}
+
+.dashboard-header .balance span {
+    font-weight: bold;
+    color: #03dac6;
+}
+
+.dashboard-main {
+    width: 100%;
+    max-width: 1000px;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1rem;
+}
+
+.game-area {
+    background: #1e1e1e;
+    border-radius: 10px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.round-info {
+    display: flex;
+    justify-content: space-between;
+}
+
+.multiplier {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.chart-placeholder {
+    background: #2c2c2c;
+    height: 250px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.box {
+    background: #1e1e1e;
+    border-radius: 10px;
+    padding: 1rem;
+}
+
+.box h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    color: #aaa;
+}
+
+.box input {
+    width: 100%;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 6px;
+    background: #2c2c2c;
+    color: white;
+    margin-bottom: 0.5rem;
+}
+
+.bet-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.history {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.history li.safe {
+    color: #03dac6;
+}
+
+.history li.crash {
+    color: #ff5252;
+}
+
+.dashboard-footer {
+    width: 100%;
+    max-width: 1000px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: #aaa;
+    margin-top: 1rem;
+}
+
+.btn {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn.place {
+    background: #03dac6;
+    color: black;
+}
+
+.btn.cashout {
+    background: #ffb300;
+    color: black;
+}
+
+.btn.clear {
+    background: #ff5252;
+    color: white;
+}
+
+.btn.logout {
+    background: #ff5252;
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s ease;
+}
+
+.btn.logout:hover {
+    background: #d32f2f;
+}
