@@ -1,171 +1,241 @@
 :root{
-    --bg:#0b0b0d;
-    --elev:#141419;
-    --elev2:#1b1b22;
-    --text:#f5f6fb;
-    --muted:#9aa0aa;
-    --accent:#30d158;
-    --cashout:#7c7cff;
+    --bg:#0B0B0D;
+    --panel:#18181D;
+    --panel-2:#1F2024;
+    --panel-3:#232428;
+    --border:#2C2D34;
+    --border-soft:#2A2B31;
+    --text:#F2F3F7;
+    --muted:#A8ADBB;
+    --green:#33D14F;          /* bright bet button */
+    --green-shadow:#1CAD3B;
+    --chip-blue:#33B2FB;
+    --chip-purple:#913EF8;
+    --pink:#FF2A5D;
 }
 
 *{box-sizing:border-box}
-html,body,#root{height:100%}
+html,body,#root{height:100%; background-color: #000}
 body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+button{font:inherit;color:inherit}
 
-.aviator{ max-width: 780px; margin: 0 auto; padding-bottom: 28px; }
+/* Page wrapper */
+.aviator-page{
+    max-width: 520px;
+    margin: 0 auto;
+    padding-bottom: 18px;
+    background-color: #000
+}
 
-.appbar{
-    display:flex; align-items:center; gap:10px;
+/* Brand / balance bar (dark strip just under app title) */
+.brandbar{
+    display:flex; align-items:center; justify-content:space-between;
     padding:10px 14px;
-    position:sticky; top:0; z-index:20;
-    background:linear-gradient(180deg, #000000cc 40%, #00000000 100%);
-    backdrop-filter:saturate(140%) blur(6px);
+    background:#111214;
+    border-bottom:1px solid #0f0f12;
+    position:sticky; top:0; z-index:50;
 }
-.icon-btn{ background:none;border:none;color:#cfd3da;font-size:22px;line-height:1;padding:6px 8px;border-radius:10px; }
-.appbar-title{ font-weight:700;font-size:20px;color:#fff;flex:1 }
-.appbar-balance{ display:flex; align-items:baseline; gap:6px; margin-left:auto }
-.appbar-balance .amount{color:#6DFF6A;font-weight:800}
-.appbar-balance .currency{color:#98ffa0;opacity:.9}
+.brand .aviator-logo{
+    font-weight:900; font-style:italic; letter-spacing:.5px;
+    color:#ff295d; font-size:26px;
+}
+.brand-actions{display:flex; align-items:center; gap:14px}
+.balance{display:flex; align-items:baseline; gap:6px}
+.balance .amount{color:#28A909; font-weight: 500}
+.balance .ccy{color:#9B9C9E;}
+.icon-btn{background:#16171C;border:1px solid var(--border);border-radius:10px;width:34px;height:34px;display:grid;place-items:center}
+.icon-lines,
+.icon-square,
+.icon-bubble{display:block}
+.icon-lines{
+    width:14px;height:10px;position:relative;
+}
+.icon-lines::before,.icon-lines::after{
+    content:"";position:absolute;left:0;right:0;height:2px;background:#cfd3da;border-radius:2px
+}
+.icon-lines::before{top:0}
+.icon-lines::after{bottom:0}
+.icon-bubble{
+    width:14px;height:14px;border:2px solid #cfd3da;border-radius:6px;position:relative;
+}
+.icon-bubble::after{
+    content:"";position:absolute;bottom:-4px;left:2px;border:6px solid transparent;border-top-color:#cfd3da;
+}
 
-.recent-row{ display:flex; gap:14px; overflow:auto; padding:8px 16px 10px; scrollbar-width:none; }
-.recent-row::-webkit-scrollbar{display:none}
-.chip{ font-weight:600; white-space:nowrap; color:#bcd7ff; opacity:.95 }
+/* Chips row */
+.recent-mults{
+    display:flex; gap:18px; padding:10px 16px; overflow:auto; scrollbar-width:none;
+}
+.recent-mults::-webkit-scrollbar{display:none}
+.chip{
+letter-spacing:.3px;
+    color:var(--chip-blue);
+}
+.chip:nth-child(4n), .chip:nth-child(4n+1){ color:var(--chip-blue); }
+.chip:nth-child(4n+2), .chip:nth-child(4n+3){ color:var(--chip-purple); }
 
-.game-card{
-    background:var(--elev); border-radius:16px; margin:6px 10px 12px; padding:12px; position:relative; overflow:hidden;
-    box-shadow: 0 10px 30px #00000055 inset;
+/* Game card */
+.game-card{ padding:10px 10px 0; }
+.game-frame{
+    height: 200px;
+    border-radius:22px;
+    background:#0f0f14;
+    border:1px solid #22232A;
+    position:relative;
+    overflow:hidden;
+    box-shadow: inset 0 0 0 2px #0f1013, inset 0 -120px 120px #0e0d10;
 }
-.status{
-    position:absolute; top:12px; left:12px; font-size:12px; color:#c7c9d6; text-transform:uppercase; letter-spacing:.06em;
-    background:#0000004a; padding:4px 8px; border-radius:999px;
-}
-.status.active{color:#9bfaa9}
-.status.crashed{color:#ff9b9b}
-.graph-wrap{ position:relative; height:260px; border-radius:12px; overflow:hidden; background:#0f0f14;}
-.burst-bg{
+.rays{
     position:absolute; inset:0;
     background:
-            radial-gradient( circle at 0% 100%, #ff2a5d22 0, transparent 60%),
-            radial-gradient( circle at 80% 20%, #7b5cff1c 0, transparent 55%),
-            conic-gradient(from 200deg at 0 100%, #ff2a5d, #6e3dff, #1c1c22);
-    filter: blur(40px) saturate(110%);
-    opacity:.35;
+            conic-gradient(from 210deg at 0% 100%, #0c0c10 0 8%, #14131a 8% 16%, #0c0c10 16% 24%, #14131a 24% 32%, #0c0c10 32% 40%, #14131a 40% 48%, #0c0c10 48% 56%, #14131a 56% 64%, #0c0c10 64% 72%, #14131a 72% 80%, #0c0c10 80% 88%, #14131a 88% 96%, #0c0c10 96% 100%);
+    opacity:.9;
 }
+.glow{
+    position:absolute; inset:0;
+    background:
+            radial-gradient(60% 60% at 50% 55%, rgba(168,141,240,.45) 0%, rgba(168,141,240,0) 55%),
+            radial-gradient(80% 80% at 35% 80%, rgba(255,42,93,.24) 0%, rgba(255,42,93,0) 70%);
+    mix-blend-mode:screen;
+}
+.curve{
+    position:absolute; left:0; right:0; bottom:16px; height:44%;
+    overflow:visible;
+}
+.curve path{
+    fill:none; stroke:#ff2a5d; stroke-width:2.6;
+    filter: drop-shadow(0 4px 0 rgba(255,42,93,.4));
+}
+.plane{
+    position:absolute; right:18px; top:84px; width:120px; height:auto;
+    transform: rotate(-6deg);
+}
+.plane-body{ fill:#ff2a5d }
+.plane-wing{ fill:#ff2a5d }
+.plane-hole{ fill:#0b0b0d }
+
 .big-mult{
     position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    font-weight:900; font-size:64px; letter-spacing: -1px;
-    color:#fff; text-shadow:0 18px 40px #000; mix-blend-mode:screen;
+    font-size:76px; font-weight:900; color:#FFFFFF;
+    text-shadow: 0 22px 52px rgba(0,0,0,.6);
+    letter-spacing:-1px;
 }
-.big-mult.crashed{ color:#ffd1d1 }
-.graph-overlay{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; }
-.graph{ width:100%; max-width:520px; opacity:.9; }
 
-.players{ position:absolute; bottom:10px; right:12px; display:flex; align-items:center; gap:10px; }
+.players{
+    position:absolute; right:12px; bottom:12px; display:flex; align-items:center; gap:10px;
+}
 .avatars{ display:flex; }
-.avatars.small .av{ width:22px; height:22px; }
-.av{ width:28px; height:28px; border-radius:999px; border:2px solid #202027; margin-left:-6px; background:#ff6a6a;}
-.av.a1{ background:linear-gradient(135deg,#ffdf85,#ff7d7d);}
-.av.a2{ background:linear-gradient(135deg,#73ffb5,#10b981);}
-.av.a3{ background:linear-gradient(135deg,#ff7dd3,#9b5cff);}
-.players .count{ color:#dadde6; font-weight:600; }
+.av{ width:28px;height:28px;border-radius:999px;border:2px solid #212229; margin-left:-6px;}
+.a1{ background:linear-gradient(135deg,#ffe9a6,#ff6a6a); }
+.a2{ background:linear-gradient(135deg,#7affc3,#14b88a); }
+.a3{ background:linear-gradient(135deg,#ff8ce1,#8d72ff); }
+.players-count{ color:#e9ecf6; font-weight:700; }
 
-.live-bet-row{ display:flex; gap:8px; justify-content:center; margin:8px 10px 0; flex-wrap:wrap; }
-.pill{
-    font-size:.9rem; background:#1b1f27; border:1px solid #2a2f3a; color:#d9deea;
-    padding:6px 10px; border-radius:999px;
-}
-.pill.ok{ border-color:#27ae60; color:#bdf5cf }
+/* Bet card */
+.bet-card{
+    background: #1B1C1D;
 
-.bet-panel{ padding:10px; }
-.bet-card{ background:var(--elev2); border-radius:18px; padding:12px; box-shadow:inset 0 0 0 1px #262633; }
-.bet-header{ font-weight:700; margin:0 0 8px 2px; color:#e6e8f0; }
-.bet-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin:12px 0; }
-.step{
-    width:40px; height:40px; border-radius:12px; border:none; background:#1a1a22; color:#e4e7f0; font-size:22px; font-weight:700;
-}
-.amount{
-    flex:1; text-align:center; font-weight:800; font-size:22px; background:#0f0f15; border-radius:12px; padding:10px 12px;
-    border:1px solid #262633;
-}
-.quick{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:12px; }
-.quick-btn{
-    background:#0f0f15; color:#cfd3da; border:1px solid #262633; border-radius:12px; padding:10px 0; font-weight:600;
-}
-
-.actions-row{ display:grid; gap:10px; grid-template-columns:1fr; }
-@media (min-width: 400px){ .actions-row{ grid-template-columns:1fr 1fr; } }
-.btn-primary{
-    width:100%; border:none; border-radius:16px; padding:16px 12px; font-weight:900; font-size:18px;
-    background:var(--accent); color:#08220e; box-shadow:0 6px 0 #1bb849;
-}
-.btn-primary:disabled{ filter:grayscale(.35); opacity:.7; cursor:not-allowed; box-shadow:none }
-.btn-cashout{
-    width:100%; border:none; border-radius:16px; padding:16px 12px; font-weight:900; font-size:18px;
-    background:var(--cashout); color:#0c0c1a; box-shadow:0 6px 0 #5c5ce6;
-}
-.btn-cashout:disabled{ filter:grayscale(.35); opacity:.7; cursor:not-allowed; box-shadow:none }
-
-.history{ margin:6px 10px; background:var(--elev2); border-radius:16px; padding:10px; }
-.history-tabs{ display:flex; gap:8px; margin-bottom:10px; }
-.htab{
-    flex:1; background:#0f0f15; border:1px solid #262633; border-radius:999px; color:#cfd3da; padding:8px 10px; font-weight:700;
-}
-.htab.active{ background:#1a1a22; color:#fff }
-
-.history-table{ width:100%; }
-.history-table .thead,
-.history-table .row{
-    display:grid;
-    grid-template-columns: 1.2fr 0.8fr 1fr 1fr;
-    gap:10px;
-    align-items:center;
-}
-.history-table .thead{ color:#bfc5d4; font-weight:700; padding:6px 4px; }
-.history-table .tbody .row{
-    padding:10px 6px; border-top:1px solid #252636; font-size:.95rem;
-}
-.history-table .tbody .row.cashout .outcome{ color:#9bfaa9 }
-.history-table .tbody .row.busted .outcome{ color:#ff9b9b }
-.empty{ text-align:center; color:#9aa0aa; padding:14px 8px }
-
-.total-line{ display:flex; align-items:center; gap:12px; margin-top:12px; }
-.bar{ flex:1; height:6px; border-radius:999px; background:#20202a; overflow:hidden }
-.barfill{ height:100%; background:linear-gradient(90deg,#6af28a,#37d668,#1bb849) }
-.total{ text-align:right }
-.total .value{ font-weight:900 }
-.total .label{ color:var(--muted); font-size:12px }
-
-.btn-logout{
-    position:fixed; right:12px; bottom:14px;
-    background:#24242e; color:#cfd3da; border:1px solid #2f2f3b; border-radius:12px; padding:8px 12px; font-weight:600;
-}
-.bottom-safe{ height:20px }
-
-@media (min-width: 880px){
-    .aviator{ max-width:1080px }
-    .graph-wrap{ height:320px }
-    .big-mult{ font-size:72px }
-}
-
-/* --- Toasts bottom-right (simple) --- */
-.toast-stack {
-    position: fixed;
-    right: 16px;
-    bottom: 16px;
-    display: flex;
+    margin:5px 10px 0;
+    border-radius:12px;
+    padding: 5px;
+    box-shadow: inset 0 0 0 1px #101016;
+    display:flex;
     flex-direction: column;
-    align-items: flex-end;      /* aliniere la dreapta */
-    gap: 8px;
-    z-index: 9999;
+    align-items: center;
+}
+.seg{
+    display:flex; align-items:center; gap:10px; width: 70%;
+    background:#111216; border-radius:50px; padding:6px; margin:2px 2px 10px;
+}
+.seg-btn{
+    flex:1; border:none; background:#111216; color:#cfd3da; padding:2px 0; border-radius:50px;
+}
+.seg-btn.active{ background:#2a2b30; color:#fff }
+.seg-icon{
+    margin-left:auto; border:none; background:#191a1f; border-radius:12px; width:36px; height:30px; display:grid; place-items:center; color:#cfd3da
+}
+.icon-square{ width:12px;height:12px;border:2px solid #cfd3da; display:block }
+
+.bet-row{
+    flex: 1;
+    display:grid; grid-template-columns: 1fr 1.1fr; gap:2px; align-items:center; margin-top:8px;
+}
+.amount-box{
+    display:flex; align-items:center; justify-content:space-between;
+    width: 100%;
+    background:#0f1014; border-radius:40px; padding:4px;
+}
+.round{
+    display:flex; align-items:center; justify-content:center;
+    width:25px;height:25px;border-radius:40px;border:none;background:#2C2D30;color:#8A8A8B;font-size:12px;
+}
+.amount-text{
+    display:flex; align-items:center; justify-content:center;
+    background:#12131a; border-radius:12px;
+    height:25px; color:#f1f3f9; letter-spacing:.3px;
+    padding-left:5px;
+    padding-right: 5px;
+}
+.amount-text .amt{ font-weight:bold; color: #CCCCCC }
+
+.bet-cta{
+    flex: 2;
+    border-radius:18px; background:#28A909; color:white;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    border: 1px solid white;
+    min-height:86px;
+    line-height:1.15;
+}
+.bet-cta-title{ font-size:20px }
+.bet-cta-amt{ font-size:20px }
+
+.quick-grid{
+    display:grid; grid-template-columns: repeat(2, 1fr); gap:4px;;
+}
+.qbtn{
+    background:#0f1014; border:0; border-radius:50px; padding:0 1rem; color:#8A8A8B;
 }
 
-.toast-stack .toast {
-    width: max-content;
-    max-width: min(92vw, 360px);
-    padding: 10px 12px;
-    border-radius: 8px;
-    background: #1a1e26;
-    color: #e2e6f3;
-    border: 1px solid #2a2f3a;
-    box-shadow: 0 10px 24px rgba(0,0,0,.35);
+/* Bottom tabs & totals */
+.bottom-card{
+    background:#1B1C1D; margin:5px 10px 0; border-radius:22px; padding:12px;
+}
+.tabs{
+    display:flex; gap:12px; margin-bottom:12px; background-color: #141516; padding: 4px; border-radius:40px;
+}
+.tab{
+    flex:1; background:#141516; color:#cfd3da; border:none; border-radius:40px; padding:4px 10px;
+}
+.tab.active{ background:#2a2b30; color:#fff }
+
+.totals{
+    display:flex; align-items:center; justify-content:space-between; gap:4px; flex-direction: column;
+}
+.totals .top{ display:flex; align-items:center; justify-content: space-between; width: 90% }
+.bets-line{ width: 90%}
+.bets-text{ color:#cfd3da; f display:block; margin-bottom:6px }
+.bar{
+    width:100%; height:8px; background:#1b1c21; border-radius:999px; overflow:hidden; border:1px solid #262730;
+}
+.bar-fill{
+    height:100%; background:linear-gradient(90deg,#69f28a,#39d86d,#1fbf56);
+    width:60%;
+}
+.totals .bottom{ text-align:right; display:flex; align-items:center; justify-content: space-between; width: 90% }
+.tot-win{ font-weight:500; font-size:16px }
+.tot-label{ color:#7B7B7B }
+
+/* Safe space like iOS home indicator */
+.safe-bottom{ height:24px }
+
+/* Desktop widen */
+@media (min-width: 880px){
+    .aviator-page{ max-width: 560px }
+    .game-frame{ height: 300px }
+    .big-mult{ font-size:86px }
+}
+
+/* Optional: very small screens */
+@media (max-width: 360px){
+    .bet-row{ grid-template-columns: 1fr; }
 }
