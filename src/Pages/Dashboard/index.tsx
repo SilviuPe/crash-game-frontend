@@ -1,251 +1,170 @@
-import { useEffect, useState, useRef } from "react";
-import { validateToken } from "../../Utils/verifications";
+import { useEffect, useRef, useState } from "react";
 import "./index.css";
-import { endpoints } from "../../API/data";
 
-// ===== Tuning =====
-const WINDOW_S = 12;   // seconds visible on X axis
-const X_SPEED  = 0.7;  // <1.0 = slower horizontal motion
-const TAU_MS   = 120;  // smoothing time-constant (bigger = smoother)
+/** ===== Tuning (graph) ===== */
+const WINDOW_S = 12;
 
-// ===== Types =====
+/** ===== Types ===== */
 interface RoundPoint {
-    t: number; // ms since round start (scaled by X_SPEED)
+    t: number;
     multiplier: number;
     status: "active" | "crashed";
 }
+type ToastKind = "info" | "success" | "warn" | "error";
 
+/** ===== Page (UI-ONLY) ===== */
 function Dashboard() {
-    const [tokenValid, setTokenValid] = useState<boolean | null>(null);
-    const [points, setPoints] = useState<RoundPoint[]>([]);
-    const [roundActive, setRoundActive] = useState(false);
-    const [betAmount, setBetAmount] = useState<number>(5);
+    // --- UI state controlat local (TU poți înlocui/gestiona din logică proprie) ---
+    const [points] = useState<RoundPoint[]>([]);         // TU vei popula
+    const [roundActive] = useState(false);               // TU vei seta
+    const [betAmount, setBetAmount] = useState<number>(100);
+    // const [placedBet] = useState<number>(0);             // TU vei seta
+    // const [liveBalance] = useState<number | null>(null); // TU vei seta
+    // const [cashedOut] = useState(false);                 // TU vei seta
+    const [currentMultiplier] = useState<number>(1.0);   // TU vei seta (exact de la server)
+    const [toasts, setToasts] = useState<{ id: number; kind: ToastKind; text: string }[]>([]);
 
-    const wsRef = useRef<WebSocket | null>(null);
-    const roundStartRef = useRef<number | null>(null);
-    const crashedRef = useRef<boolean>(false);
+    const msgIdRef = useRef(1);
+    const crashedRef = useRef<boolean>(false);           // TU îl poți actualiza din logică
 
-    // motion/smoothing
-    const latestMultRef = useRef<number>(1.0);
-    const smoothedMultRef = useRef<number>(1.0);
-    const prevAnimTimeRef = useRef<number | null>(null);
-    const animIdRef = useRef<number | null>(null);
-
-    // keep latest values for closures
-    const pointsRef = useRef<RoundPoint[]>([]);
-    useEffect(() => { pointsRef.current = points; }, [points]);
-
-    const roundActiveRef = useRef<boolean>(false);
-    useEffect(() => { roundActiveRef.current = roundActive; }, [roundActive]);
-
-    // ===== Auth check =====
-    useEffect(() => {
-        (async () => {
-            const isValid = await validateToken();
-            setTokenValid(isValid);
-            if (!isValid) window.location.href = "/login";
-        })();
-    }, []);
-
-    // ===== RAF loop =====
-    const startAnim = () => {
-        if (animIdRef.current != null) return;
-
-        const animate = () => {
-            if (!roundActiveRef.current || roundStartRef.current == null) {
-                animIdRef.current = null;
-                return;
-            }
-
-            const now = performance.now();
-            const t = Math.max(0, (now - roundStartRef.current) * X_SPEED);
-
-            // time-based exponential smoothing toward latest tick value
-            const dt = prevAnimTimeRef.current == null ? 16 : Math.max(1, now - prevAnimTimeRef.current);
-            prevAnimTimeRef.current = now;
-            const k = 1 - Math.exp(-dt / TAU_MS); // 0..1
-            smoothedMultRef.current = Math.max(
-                1.0,
-                smoothedMultRef.current + (latestMultRef.current - smoothedMultRef.current) * k
-            );
-
-            const m = smoothedMultRef.current;
-
-            // append a reasonably dense path
-            setPoints(prev => {
-                const last = prev.at(-1);
-                if (last && t - last.t < 20) return prev; // ~50 points/sec
-                const next = [...prev, { t, multiplier: m, status: "active" as const }];
-                const MAX_POINTS = 2000;
-                return next.length > MAX_POINTS ? next.slice(-MAX_POINTS) : next;
-            });
-
-            animIdRef.current = requestAnimationFrame(animate);
-        };
-
-        animIdRef.current = requestAnimationFrame(animate);
+    const pushToast = (text: string, kind: ToastKind = "info") => {
+        const id = msgIdRef.current++;
+        setToasts(list => [...list, { id, kind, text }]);
+        setTimeout(() => setToasts(list => list.filter(x => x.id !== id)), 2500);
     };
 
-    const stopAnim = () => {
-        if (animIdRef.current != null) {
-            cancelAnimationFrame(animIdRef.current);
-            animIdRef.current = null;
-        }
+    /** ===== Actions (UI placeholders) ===== */
+    const handlePlaceBet = () => {
+        // TODO: înlocuiește cu logica ta (WS place_bet etc.)
+        pushToast("Placed bet");
     };
 
-    // ===== WebSocket (auto-reconnect). Depends ONLY on tokenValid =====
-    useEffect(() => {
-        if (tokenValid !== true) return;
-
-        let stopped = false;
-        let retry = 1000; // ms backoff
-
-        const connect = () => {
-            if (stopped) return;
-
-            const ws = new WebSocket(endpoints.gameWebSocket);
-            wsRef.current = ws;
-
-            ws.onopen = () => {
-                retry = 1000;
-                const token = localStorage.getItem("token");
-                if (token) ws.send(JSON.stringify({ token }));
-            };
-
-            ws.onmessage = (event) => {
-                let data: any;
-                try { data = JSON.parse(event.data); } catch { return; }
-
-                // Rising tick: update latest value; RAF handles motion
-                if (typeof data.rising === "number") {
-                    const now = performance.now();
-                    latestMultRef.current = Math.max(1.0, data.rising);
-
-                    // Start of a (new) round?
-                    if (crashedRef.current || !roundActiveRef.current || pointsRef.current.length === 0) {
-                        roundStartRef.current = now;
-                        crashedRef.current = false;
-                        latestMultRef.current = Math.max(1.0, data.rising);
-
-                        // reset smoothing
-                        smoothedMultRef.current = latestMultRef.current;
-                        prevAnimTimeRef.current = null;
-
-                        setPoints([{ t: 0, multiplier: 1.0, status: "active" }]);
-                        roundActiveRef.current = true;
-                        setRoundActive(true);
-                        startAnim();
-                        return;
-                    }
-                }
-
-                // Crash event: stop anim and mark crash
-                if (typeof data.crash === "number") {
-                    const now = performance.now();
-                    const t = Math.max(0, (now - (roundStartRef.current ?? now)) * X_SPEED);
-                    stopAnim();
-                    roundActiveRef.current = false;
-                    setRoundActive(false);
-                    crashedRef.current = true;
-                    setPoints(prev => [...prev, { t, multiplier: data.crash, status: "crashed" }]);
-                }
-            };
-
-            ws.onerror = () => {
-                // ensure close triggers reconnect
-                try { ws.close(); } catch {}
-            };
-
-            ws.onclose = () => {
-                stopAnim();
-                roundActiveRef.current = false;
-                setRoundActive(false);
-                if (!stopped) {
-                    setTimeout(connect, retry);
-                    retry = Math.min(retry * 2, 10000);
-                }
-            };
-        };
-
-        connect();
-
-        return () => {
-            stopped = true;
-            stopAnim();
-            wsRef.current?.close();
-        };
-    }, [tokenValid]);
-
-    // ===== Actions =====
-    const sendWS = (payload: any) => {
-        const ws = wsRef.current;
-        if (!ws || ws.readyState !== WebSocket.OPEN) return;
-        ws.send(JSON.stringify(payload));
+    const handleCashout = () => {
+        // TODO: înlocuiește cu logica ta (WS cashout etc.)
+        pushToast("Cashed out");
     };
-    const handlePlaceBet = () => sendWS({ action: "place_bet", bet: betAmount });
-    const handleCashout = () => sendWS({ action: "cashout" });
-    const handleLogout = () => { localStorage.removeItem("token"); window.location.href = "/login"; };
 
-    if (tokenValid === null) return <p>Checking token...</p>;
-    if (!tokenValid) return null;
-
-    const latest = points.at(-1)?.multiplier ?? 1.0;
+    const handleLogout = () => {
+        // TODO: înlocuiește cu logica ta (logout real)
+        pushToast("UI only: Logout", "info");
+    };
 
     return (
-        <div className="dashboard">
-            <header className="dashboard-header">
-                <div className="title">CRASH</div>
-                <button className="btn logout" onClick={handleLogout}>Logout</button>
+        <div className="aviator">
+            {/* Header */}
+            <header className="appbar">
+                <button className="icon-btn" aria-label="Back">✕</button>
+                <div className="appbar-title">Crash Game</div>
+                <div className="appbar-balance">
+                    <span className="amount">1234</span>
+                    <span className="currency">TZS</span>
+                </div>
+                <button className="icon-btn" aria-label="Menu">≡</button>
             </header>
 
-            <main className="dashboard-main">
-                <section className="game-area">
-                    <div className="round-info">
-                        <div>Status: {roundActive ? "active" : (crashedRef.current ? "crashed" : "idle")}</div>
-                        <div className="multiplier">{latest.toFixed(2)}x</div>
-                    </div>
+            {/* Recent Multipliers (mock vizual) */}
+            <div className="recent-row">
+                {[2.48, 1.39, 1.54, 3.45, 5.57, 2.60, 6.44, 2.08].map((m, i) => (
+                    <span key={i} className="chip">{m.toFixed(2)}x</span>
+                ))}
+            </div>
 
-                    <div className="chart-placeholder">
+            {/* Game Area */}
+            <section className="game-card">
+                <div className={`status ${roundActive ? "active" : crashedRef.current ? "crashed" : "idle"}`}>
+                    {roundActive ? "FLYING" : crashedRef.current ? "CRASHED" : "PLACE BET"}
+                </div>
+
+                <div className="graph-wrap">
+                    <div className="burst-bg" />
+                    <div className={`big-mult ${crashedRef.current ? "crashed" : ""}`}>
+                        {currentMultiplier.toFixed(2)}x
+                    </div>
+                    <div className="graph-overlay">
                         <Graph data={points} />
                     </div>
+                </div>
+            </section>
 
-                    <div className="actions">
-                        <button className="btn place" onClick={handlePlaceBet}>Place Bet</button>
-                        <button className="btn cashout" onClick={handleCashout}>Cashout</button>
+            {/* Bet Info */}
+            <div className="live-bet-row">
+                <div className="pill">Bet: <strong>{(0).toFixed(2)} TZS</strong></div>
+                <div className={`pill ${false ? "ok" : ""}`}>
+                    Cashout: <strong>{"-"} TZS</strong>
+                </div>
+            </div>
+
+            {/* Bet Controls */}
+            <section className="bet-panel">
+                <div className="bet-card">
+                    <div className="bet-header">Place Your Bet</div>
+
+                    <div className="bet-row">
+                        <button
+                            className="step"
+                            onClick={() => setBetAmount(a => Math.max(100, a - 100))}
+                        >−</button>
+                        <div className="amount">{betAmount.toFixed(2)} TZS</div>
+                        <button
+                            className="step"
+                            onClick={() => setBetAmount(a => a + 100)}
+                        >＋</button>
                     </div>
-                </section>
 
-                <aside className="sidebar">
-                    <div className="box">
-                        <h3>Your Bet</h3>
-                        <input
-                            type="number"
-                            value={betAmount}
-                            onChange={(e) => setBetAmount(parseFloat(e.target.value || "0"))}
-                        />
-                        <div className="bet-actions">
-                            <button className="btn place" onClick={handlePlaceBet}>Place</button>
-                            <button className="btn clear" onClick={() => setBetAmount(0)}>Clear</button>
-                        </div>
+                    <div className="quick">
+                        {[500, 1000, 2000, 5000].map(v => (
+                            <button
+                                className="quick-btn"
+                                key={v}
+                                onClick={() => setBetAmount(v)}
+                            >
+                                {v.toLocaleString()}
+                            </button>
+                        ))}
                     </div>
 
-                    <div className="box">
-                        <h3>Announcements</h3>
-                        <p>Welcome! Place your bet.</p>
-                    </div>
-                </aside>
-            </main>
+                    <div className="actions-row">
+                        <button
+                            className="btn-primary"
+                            onClick={handlePlaceBet}
+                        >
+                            Place Bet
+                        </button>
 
-            <footer className="dashboard-footer">
-                <div>© Crash Game Studio</div>
-            </footer>
+                        <button
+                            className="btn-cashout"
+                            onClick={handleCashout}
+                        >
+                            Cashout
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            {/* History (vizual) */}
+            <section className="history">
+                <div className="history-tabs">
+                    <button className="htab active">All Bets</button>
+                    <button className="htab">My Bets</button>
+                </div>
+            </section>
+
+            <footer className="bottom-safe" />
+            <button className="btn-logout" onClick={handleLogout}>Logout</button>
+
+            {/* Toasts */}
+            <div className="toast-stack">
+                {toasts.slice(-3).map(t => (
+                    <div key={t.id} className={`toast float ${t.kind}`}>
+                        {t.text}
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
 
-export { Dashboard };
-
-// ===== Graph =====
+/** ===== Graph Component (UI-ONLY) ===== */
 function Graph({ data }: { data: RoundPoint[] }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -255,7 +174,6 @@ function Graph({ data }: { data: RoundPoint[] }) {
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
-        // Hi-DPI
         const dpr = window.devicePixelRatio || 1;
         const CSS_W = 520, CSS_H = 260;
         canvas.width = CSS_W * dpr;
@@ -265,13 +183,19 @@ function Graph({ data }: { data: RoundPoint[] }) {
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
         ctx.clearRect(0, 0, CSS_W, CSS_H);
-        if (data.length === 0) return;
+        if (data.length === 0) {
+            // desen minim când nu avem date
+            ctx.fillStyle = "#888";
+            ctx.font = "12px Inter, system-ui, sans-serif";
+            ctx.fillText("No data", 12, 18);
+            return;
+        }
 
         const padding = 16;
         const w = CSS_W - padding * 2;
         const h = CSS_H - padding * 2;
 
-        // X scale: fixed window; slide after WINDOW_S is filled
+        // X scale (ultimele 12s)
         const windowMs = WINDOW_S * 1000;
         const lastT = data[data.length - 1].t;
         const xMin = lastT < windowMs ? 0 : lastT - windowMs;
@@ -279,53 +203,72 @@ function Graph({ data }: { data: RoundPoint[] }) {
         const xScale = (t: number) =>
             padding + ((Math.min(Math.max(t, xMin), xMax) - xMin) / (xMax - xMin)) * w;
 
-        // Y scale: auto to current max, min 2x
+        // Y scale log pentru aspect “natural”
         const maxMult = Math.max(2, ...data.map(p => p.multiplier));
-        const yScale = (m: number) => CSS_H - padding - (m / maxMult) * h;
+        const yScale = (m: number) => {
+            const logMax = Math.log(maxMult);
+            const logM = Math.log(Math.max(1.0001, m));
+            return CSS_H - padding - (logM / logMax) * h;
+        };
 
         // grid
         ctx.strokeStyle = "#2a2a2a";
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(padding, CSS_H - padding); ctx.lineTo(CSS_W - padding, CSS_H - padding);
-        ctx.moveTo(padding, padding);         ctx.lineTo(padding, CSS_H - padding);
+        ctx.moveTo(padding, CSS_H - padding);
+        ctx.lineTo(CSS_W - padding, CSS_H - padding);
+        ctx.moveTo(padding, padding);
+        ctx.lineTo(padding, CSS_H - padding);
         ctx.stroke();
 
-        // Y ticks
+        // Y labels
         ctx.fillStyle = "#888";
-        ctx.font = "12px sans-serif";
+        ctx.font = "12px Inter, system-ui, sans-serif";
         const ySteps = 5;
         for (let i = 0; i <= ySteps; i++) {
             const m = 1 + (i * (maxMult - 1)) / ySteps;
             const y = yScale(m);
             ctx.globalAlpha = 0.25;
-            ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(CSS_W - padding, y); ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(padding, y);
+            ctx.lineTo(CSS_W - padding, y);
+            ctx.stroke();
             ctx.globalAlpha = 1;
-            ctx.fillText(`${m.toFixed(2)}x`, 4, y - 2);
+            ctx.fillText(`${m.toFixed(1)}x`, 4, y - 2);
         }
 
-        // X ticks (seconds within visible window)
+        // X labels
         for (let i = 0; i <= WINDOW_S; i++) {
             const t = xMin + (i * windowMs) / WINDOW_S;
             const x = xScale(t);
             ctx.globalAlpha = 0.25;
-            ctx.beginPath(); ctx.moveTo(x, padding); ctx.lineTo(x, CSS_H - padding); ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, padding);
+            ctx.lineTo(x, CSS_H - padding);
+            ctx.stroke();
             ctx.globalAlpha = 1;
             const sec = Math.round((t - xMin) / 1000);
             ctx.fillText(`${sec}s`, x - 8, CSS_H - 2);
         }
 
-        // line (rounded joins/caps for a smooth look)
+        // line (curbă Bezier simplă)
         ctx.beginPath();
         ctx.strokeStyle = "#a88df0";
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
         ctx.lineJoin = "round";
         ctx.lineCap = "round";
-        data.forEach((p, i) => {
-            const x = xScale(p.t);
-            const y = yScale(p.multiplier);
-            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        });
+
+        if (data.length > 1) {
+            ctx.moveTo(xScale(data[0].t), yScale(data[0].multiplier));
+            for (let i = 1; i < data.length; i++) {
+                const prev = data[i - 1];
+                const p = data[i];
+                const x1 = xScale(prev.t), y1 = yScale(prev.multiplier);
+                const x2 = xScale(p.t), y2 = yScale(p.multiplier);
+                const cx = (x1 + x2) / 2, cy = (y1 + y2) / 2;
+                ctx.quadraticCurveTo(cx, cy, x2, y2);
+            }
+        }
         ctx.stroke();
 
         // crash marker
@@ -334,9 +277,14 @@ function Graph({ data }: { data: RoundPoint[] }) {
             const x = xScale(last.t);
             const y = yScale(last.multiplier);
             ctx.fillStyle = "#e74c3c";
-            ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "#e74c3c";
+            ctx.font = "bold 14px Inter, system-ui, sans-serif";
+            ctx.fillText(`CRASH: ${last.multiplier.toFixed(2)}x`, x + 8, y - 8);
         }
     }, [data]);
 
-    return <canvas ref={canvasRef} />;
+    return <canvas className="graph" ref={canvasRef} />;
 }
+
+export { Dashboard };
