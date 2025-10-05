@@ -1,5 +1,5 @@
 :root{
-    --bg:#0B0B0D;
+    --bg:linear-gradient(135deg,rgba(0, 12, 10, 1) 50%, rgba(0, 84, 35, 1) 100%);
     --panel:#18181D;
     --panel-2:#1F2024;
     --panel-3:#232428;
@@ -15,8 +15,8 @@
 }
 
 *{box-sizing:border-box}
-html,body,#root{height:100%; background-color: #000}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+html,body,#root{height:100%; background: var(--bg)}
+body{margin:0;background: var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
 button{font:inherit;color:inherit}
 
 /* Page wrapper */
@@ -24,7 +24,7 @@ button{font:inherit;color:inherit}
     max-width: 520px;
     margin: 0 auto;
     padding-bottom: 18px;
-    background-color: #000
+    background:transparent;
 }
 
 /* Brand / balance bar (dark strip just under app title) */
@@ -41,8 +41,8 @@ button{font:inherit;color:inherit}
 }
 .brand-actions{display:flex; align-items:center; gap:14px}
 .balance{display:flex; align-items:baseline; gap:6px}
-.balance .amount{color:#28A909; font-weight: 500}
-.balance .ccy{color:#9B9C9E;}
+.balance .amount{color:#28A909; font-weight: 500; font-size: 22px}
+.balance .ccy{color:#9B9C9E; font-size: 22px}
 .icon-btn{background:#16171C;border:1px solid var(--border);border-radius:10px;width:34px;height:34px;display:grid;place-items:center}
 .icon-lines,
 .icon-square,
@@ -117,6 +117,7 @@ letter-spacing:.3px;
 .big-mult{
     position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
     font-size:76px; font-weight:900; color:#FFFFFF;
+    font-family: Inter, sans-serif;
     text-shadow: 0 22px 52px rgba(0,0,0,.6);
     letter-spacing:-1px;
 }
@@ -129,7 +130,7 @@ letter-spacing:.3px;
 .a1{ background:linear-gradient(135deg,#ffe9a6,#ff6a6a); }
 .a2{ background:linear-gradient(135deg,#7affc3,#14b88a); }
 .a3{ background:linear-gradient(135deg,#ff8ce1,#8d72ff); }
-.players-count{ color:#e9ecf6; font-weight:700; }
+.players-count{ color:#e9ecf6; font-weight:700; font-family: Inter, sans-serif;}
 
 /* Bet card */
 .bet-card{
@@ -148,7 +149,7 @@ letter-spacing:.3px;
     background:#111216; border-radius:50px; padding:6px; margin:2px 2px 10px;
 }
 .seg-btn{
-    flex:1; border:none; background:#111216; color:#cfd3da; padding:2px 0; border-radius:50px;
+    flex:1; border:none; background:#111216; color:#cfd3da; padding:2px 0; border-radius:50px; font-family: Inter, sans-serif;
 }
 .seg-btn.active{ background:#2a2b30; color:#fff }
 .seg-icon{
@@ -176,7 +177,7 @@ letter-spacing:.3px;
     padding-left:5px;
     padding-right: 5px;
 }
-.amount-text .amt{ font-weight:bold; color: #CCCCCC }
+.amount-text .amt{ font-weight:bold; color: #CCCCCC; font-family: Inter, sans-serif; }
 
 .bet-cta{
     flex: 2;
@@ -186,14 +187,14 @@ letter-spacing:.3px;
     min-height:86px;
     line-height:1.15;
 }
-.bet-cta-title{ font-size:20px }
-.bet-cta-amt{ font-size:20px }
+.bet-cta-title{ font-size:20px; font-family: Inter, sans-serif; }
+.bet-cta-amt{ font-size:20px; font-family: Inter, sans-serif; }
 
 .quick-grid{
     display:grid; grid-template-columns: repeat(2, 1fr); gap:4px;;
 }
 .qbtn{
-    background:#0f1014; border:0; border-radius:50px; padding:0 1rem; color:#8A8A8B;
+    background:#0f1014; border:0; border-radius:50px; padding:0 1rem; color:#8A8A8B; font-family: Inter, sans-serif;
 }
 
 /* Bottom tabs & totals */
@@ -213,7 +214,7 @@ letter-spacing:.3px;
 }
 .totals .top{ display:flex; align-items:center; justify-content: space-between; width: 90% }
 .bets-line{ width: 90%}
-.bets-text{ color:#cfd3da; f display:block; margin-bottom:6px }
+.bets-text{ color:#cfd3da; display:block; margin-bottom:6px; font-family: Inter, sans-serif; }
 .bar{
     width:100%; height:8px; background:#1b1c21; border-radius:999px; overflow:hidden; border:1px solid #262730;
 }
@@ -222,8 +223,8 @@ letter-spacing:.3px;
     width:60%;
 }
 .totals .bottom{ text-align:right; display:flex; align-items:center; justify-content: space-between; width: 90% }
-.tot-win{ font-weight:500; font-size:16px }
-.tot-label{ color:#7B7B7B }
+.tot-win{ font-weight:500; font-size:16px; font-family: Inter, sans-serif; }
+.tot-label{ color:#7B7B7B; font-family: Inter, sans-serif; }
 
 /* Safe space like iOS home indicator */
 .safe-bottom{ height:24px }
@@ -232,7 +233,7 @@ letter-spacing:.3px;
 @media (min-width: 880px){
     .aviator-page{ max-width: 560px }
     .game-frame{ height: 300px }
-    .big-mult{ font-size:86px }
+    .big-mult{ font-size:86px; font-family: Inter, sans-serif;}
 }
 
 /* Optional: very small screens */
