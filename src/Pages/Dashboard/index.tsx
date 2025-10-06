@@ -4,7 +4,7 @@ import {connectToWebsocket} from './api';
 import "./index.css";
 
 function Dashboard() {
-    const [balance, setBalance] = useState<number>(500);
+    const [balance] = useState<number>(500);
     const [graphValue, setGraphValue] = useState<number>(1.0);
     const [betPanels, setBetPanels] = useState(
         {
