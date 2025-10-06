@@ -187,6 +187,11 @@ letter-spacing:.3px;
     min-height:86px;
     line-height:1.15;
 }
+.bet-cta:active {
+    animation-duration: 0.5s;
+    animation-name: blink;
+    animation-timing-function: revert;
+}
 .bet-cta-title{ font-size:20px; font-family: Inter, sans-serif; }
 .bet-cta-amt{ font-size:20px; font-family: Inter, sans-serif; }
 
@@ -239,4 +244,11 @@ letter-spacing:.3px;
 /* Optional: very small screens */
 @media (max-width: 360px){
     .bet-row{ grid-template-columns: 1fr; }
+}
+
+
+
+@keyframes blink {
+    0% { opacity: 0.5; }
+    100% { opacity: 1; }
 }

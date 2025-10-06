@@ -1,5 +1,5 @@
-const API = 'http://localhost:8081';
-const APIWS = 'ws://localhost:8081';
+const API = 'http://localhost:8000';
+const APIWS = 'ws://127.0.0.1:8000';
 
 
 const endpoints = {

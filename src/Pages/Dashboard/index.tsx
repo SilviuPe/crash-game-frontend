@@ -1,6 +1,46 @@
+import {useState, useEffect} from 'react';
+
+import {connectToWebsocket} from './api';
 import "./index.css";
 
 function Dashboard() {
+    const [balance, setBalance] = useState<number>(500);
+    const [graphValue, setGraphValue] = useState<number>(1.0);
+    const [betPanels, setBetPanels] = useState(
+        {
+            top : {
+                value: 1,
+            },
+            bottom: {
+                value: 1,
+            }
+        }
+    )
+
+    const updateGraph = (graphValue: number) => {
+        setGraphValue(graphValue);
+    }
+
+    const updateBetPanels = (panel: string, value: number) => {
+        if (value <= 0) {
+            return;
+        }
+        if (value > balance) {
+            return;
+        }
+
+        setBetPanels((prevState) => ({
+            ...prevState,
+            [panel] : {
+                value: value
+            }
+        }))
+    }
+
+    useEffect(()=> {
+        connectToWebsocket(updateGraph);
+    },[])
+
     return (
         <div className="aviator-page">
             {/* Top app header (brand + balance + icons) */}
@@ -10,7 +50,7 @@ function Dashboard() {
                 </div>
                 <div className="brand-actions">
                     <div className="balance">
-                        <span className="amount">660.86</span>
+                        <span className="amount">{balance}</span>
                         <span className="ccy">TZS</span>
                     </div>
                     <button className="icon-btn" aria-label="Menu">
@@ -45,7 +85,7 @@ function Dashboard() {
                         <circle cx="112" cy="28" r="3" className="plane-hole" />
                     </svg>
 
-                    <div className="big-mult">2.43x</div>
+                    <div className="big-mult">{graphValue.toFixed(2)}x</div>
 
                     <div className="players">
                         <div className="avatars">
@@ -68,22 +108,37 @@ function Dashboard() {
                 <div style={{display: "flex", justifyContent: "space-between", gap: "0.5rem", width: "100%"}}>
                     <div className="bet-row" style={{display: "flex", flexDirection: "column"}}>
                         <div className="amount-box">
-                            <button className="round minus">−</button>
+                            <button className="round minus" onClick={()=>{
+
+                                updateBetPanels('top', betPanels.top.value - 1)
+                            }}>−</button>
                             <div className="amount-text">
-                                <span className="amt">100.00</span>
+                                <span className="amt">{betPanels.top.value}</span>
                             </div>
-                            <button className="round plus">＋</button>
+                            <button className="round plus" onClick={()=>{
+                                updateBetPanels('top', betPanels.top.value + 1)
+                            }}>＋</button>
                         </div>
                         <div className="quick-grid">
-                            <button className="qbtn">500</button>
-                            <button className="qbtn">1,000</button>
-                            <button className="qbtn">2,000</button>
-                            <button className="qbtn">5,000</button>
+                            <div className="quick-grid">
+                                <button className="qbtn" onClick={()=>{
+                                    updateBetPanels('top', 500)
+                                }}>500</button>
+                                <button className="qbtn" onClick={()=>{
+                                    updateBetPanels('top', 1000)
+                                }}>1,000</button>
+                                <button className="qbtn" onClick={()=>{
+                                    updateBetPanels('top', 2000)
+                                }}>2,000</button>
+                                <button className="qbtn" onClick={()=>{
+                                    updateBetPanels('top', 5000)
+                                }}>5,000</button>
+                            </div>
                         </div>
                     </div>
                     <button className="bet-cta">
                         <span className="bet-cta-title">Bet</span>
-                        <span className="bet-cta-amt">100.00 TZS</span>
+                        <span className="bet-cta-amt">{betPanels.top.value} TZS</span>
                     </button>
                 </div>
 
@@ -99,22 +154,34 @@ function Dashboard() {
                 <div style={{display: "flex", justifyContent: "space-between", gap: "0.5rem", width: "100%"}}>
                     <div className="bet-row" style={{display: "flex", flexDirection: "column"}}>
                         <div className="amount-box">
-                            <button className="round minus">−</button>
+                            <button className="round minus" onClick={()=>{
+                                updateBetPanels('bottom', betPanels.bottom.value - 1)
+                            }}>−</button>
                             <div className="amount-text">
-                                <span className="amt">100.00</span>
+                                <span className="amt">{betPanels.bottom.value}</span>
                             </div>
-                            <button className="round plus">＋</button>
+                            <button className="round plus" onClick={()=>{
+                                updateBetPanels('bottom', betPanels.bottom.value + 1)
+                            }}>＋</button>
                         </div>
                         <div className="quick-grid">
-                            <button className="qbtn">500</button>
-                            <button className="qbtn">1,000</button>
-                            <button className="qbtn">2,000</button>
-                            <button className="qbtn">5,000</button>
+                            <button className="qbtn" onClick={()=>{
+                                updateBetPanels('bottom', 500)
+                            }}>500</button>
+                            <button className="qbtn" onClick={()=>{
+                                updateBetPanels('bottom', 1000)
+                            }}>1,000</button>
+                            <button className="qbtn" onClick={()=>{
+                                updateBetPanels('bottom', 2000)
+                            }}>2,000</button>
+                            <button className="qbtn" onClick={()=>{
+                                updateBetPanels('bottom', 5000)
+                            }}>5,000</button>
                         </div>
                     </div>
                     <button className="bet-cta">
                         <span className="bet-cta-title">Bet</span>
-                        <span className="bet-cta-amt">100.00 TZS</span>
+                        <span className="bet-cta-amt">{betPanels.bottom.value} TZS</span>
                     </button>
                 </div>
 
