@@ -10,7 +10,6 @@ function Login() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         FetchLogin(username, password);
-        console.log("test")
     };
 
     useEffect(() => {
