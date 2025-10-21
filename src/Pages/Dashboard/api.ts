@@ -1,5 +1,13 @@
 import {endpoints} from '../../API/data';
 
+import placeBetUrl from '../../assets/sounds/placeBet.mp3';
+import cashoutUrl  from '../../assets/sounds/cashout.mp3';
+import crashUrl    from '../../assets/sounds/crashGame.mp3';
+
+const placebetSound = new Audio(placeBetUrl);
+const cashoutSound  = new Audio(cashoutUrl);
+const crashgameSound = new Audio(crashUrl);
+
 const connectToWebsocket = (
     callbackUpdateGraph: (graphValue: number) => void,
     updateGameState: (newState: object) => void,
@@ -62,6 +70,7 @@ const connectToWebsocket = (
                         })
                     }
                 }
+                placebetSound.play()
                 logger('Bet placed successfully', {type: 'success', ttl: 3000})
             }
             else if (data.message === "You cannot place a bet right now!") {
@@ -71,6 +80,7 @@ const connectToWebsocket = (
                 if (data.event === "cashout") {
                     logger(data.message, {type: data.status, ttl: 3000})
                     if (data.status === "success") {
+                        cashoutSound.play()
                         updateGameState({
                             betPlaced: {
                                 panel_1 : false,
@@ -82,6 +92,7 @@ const connectToWebsocket = (
             }
         }
         if (data.crash) {
+            crashgameSound.play()
             updateGameState({
                 betPlaced: {
                     panel_1 : false,

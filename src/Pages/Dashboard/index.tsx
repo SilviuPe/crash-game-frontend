@@ -204,8 +204,8 @@ function Dashboard() {
                         <div className="quick-grid">
                             <div className="quick-grid">
                                 <button className="qbtn" onClick={()=>{
-                                    updateBetPanels('top', 500)
-                                }}>500</button>
+                                    updateBetPanels('top', 200)
+                                }}>200</button>
                                 <button className="qbtn" onClick={()=>{
                                     updateBetPanels('top', 1000)
                                 }}>1,000</button>
@@ -258,8 +258,8 @@ function Dashboard() {
                         </div>
                         <div className="quick-grid">
                             <button className="qbtn" onClick={()=>{
-                                updateBetPanels('bottom', 500)
-                            }}>500</button>
+                                updateBetPanels('bottom', 200)
+                            }}>200</button>
                             <button className="qbtn" onClick={()=>{
                                 updateBetPanels('bottom', 1000)
                             }}>1,000</button>
