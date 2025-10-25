@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import {log} from '../../Components/Logger';
 import {connectToWebsocket} from './api';
 import backgroundSong from '../../assets/sounds/background.mp3';
@@ -30,9 +30,52 @@ function Dashboard() {
         }
     )
 
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const [audioReady, setAudioReady] = useState(false);
+
+    useEffect(() => {
+        const el = audioRef.current;
+        if (!el) return;
+
+        if (!audioReady) {
+            if (!audioRef.current) return;
+            audioRef.current.muted = false;
+            audioRef.current.play().catch(() => {});
+        }
+
+        const tryPlay = async () => {
+            try {
+                await el.play();
+                setAudioReady(true);
+            } catch {
+                setAudioReady(false);
+            }
+        };
+
+
+
+        tryPlay();
+
+        const onUserInteract = async () => {
+            if (!audioRef.current) return;
+            audioRef.current.muted = false;
+            try {
+                await audioRef.current.play();
+                setAudioReady(true);
+            } catch {}
+        };
+
+        window.addEventListener("pointerdown", onUserInteract, { once: true });
+        window.addEventListener("keydown", onUserInteract, { once: true });
+
+        return () => {
+            window.removeEventListener("pointerdown", onUserInteract);
+            window.removeEventListener("keydown", onUserInteract);
+        };
+    }, [audioReady]);
+
     const updateGraph = (graphValue: number) => {
         setGraphValue(graphValue);
-
     }
 
     const updateBetPanels = (panel: string, value: number) => {
@@ -78,7 +121,6 @@ function Dashboard() {
 
     const cashoutAction = () => {
         if (gameState.betPlaced) {
-
             if (ws) {
                 const data = {
                     action: "cashout",
@@ -115,14 +157,25 @@ function Dashboard() {
             }))
         }
     }
+
     useEffect(()=> {
         const ws = connectToWebsocket(updateGraph, changeGameState, log, setBalance);
         setWs(ws);
     },[])
+
     return (
         <div className="aviator-page">
-            <audio src={backgroundSong} autoPlay={true} loop={true}></audio>
-            {/* Top app header (brand + balance + icons) */}
+
+            {/* BACKGROUND AUDIO - FIXED AUTOPLAY */}
+            <audio
+                ref={audioRef}
+                src={backgroundSong}
+                autoPlay
+                loop
+                playsInline
+                preload="auto"
+            />
+
             <div className="brandbar">
                 <div className="brand">
                     <span className="aviator-logo">Crash Game</span>
@@ -150,11 +203,9 @@ function Dashboard() {
 
             {/* Game card */}
             <div className="game-card">
-                {/* black rounded frame */}
                 <div className="game-frame">
                     <div className="rays"/>
                     <div className="glow"/>
-                    {/* curve + plane */}
                     <svg className="curve" viewBox="0 0 100 42" preserveAspectRatio="none" aria-hidden>
                         <path d="M0,38 C22,36 40,31 55,22 C70,13 85,7 100,5"/>
                     </svg>
@@ -201,7 +252,6 @@ function Dashboard() {
                     <div className="bet-row" style={{display: "flex", flexDirection: "column"}}>
                         <div className="amount-box">
                             <button className="round minus" onClick={() => {
-
                                 updateBetPanels('top', betPanels.top.value - 1)
                             }}>−
                             </button>
